@@ -182,8 +182,9 @@ def train_classifier(args, train, dev):
 
     num_epochs = 5
     for t in range(0, num_epochs):
-        loss_this_epoch = 0.0
+        model.train()
         random.seed(t)
+        train_loss = 0.0
         # You can use batching if you'd like
         ex_idxs = [i for i in range(0, len(train))]
         random.shuffle(ex_idxs)
@@ -194,11 +195,21 @@ def train_classifier(args, train, dev):
             predictions, attn_maps = model(row.input_tensor)
             loss = loss_fcn(predictions, row.output_tensor)
             
-            model.zero_grad() # clearing optimizer gradients instead of model gradients
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            loss_this_epoch += loss.item()
-        print(f"Epoch {t}: loss = {100*loss_this_epoch/len(train):.2f}%")
+            train_loss += loss.item()
+        print(f"Epoch {t}: Train Loss = {100*train_loss/len(train):.2f}%", end="\t")
+
+        # Evaluate on dev set
+        model.eval()
+        dev_loss = 0.0
+        for idx in range(len(dev)):
+            row = dev[idx]
+            predictions, attn_maps = model(row.input_tensor)
+            loss = loss_fcn(predictions, row.output_tensor)
+            dev_loss += loss.item()
+        print(f"Eval Loss = {100*dev_loss/len(dev):.2f}%")
     model.eval()
     return model
 
