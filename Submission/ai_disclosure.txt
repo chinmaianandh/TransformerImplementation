@@ -1,0 +1,21 @@
+1. Did you use any AI assistance to complete this homework? If so, please also specify what
+AI you used.
+Ans. 
+Yes, I have used ChatGpt.
+
+
+2. If you used a large language model to assist you, please paste all of the prompts that
+you used below. Add a separate bullet for each prompt, and specify which problem is
+associated with which prompt.
+Ans.
+1. what is layer normalization? referring to nn.LayerNorm
+2. what is feed forward network?
+3. In residual network, any layer output is connected to input vector or is it connected to previous layer output?
+
+
+3. Free response: For each problem for which you used assistance, describe your overall
+experience with the AI. How helpful was it? Did it just directly give you a good answer,
+or did you have to edit it? Was its output ever obviously wrong or irrelevant? Did you
+use it to get the answer or check your own answer?
+Ans.
+The AI was very helpful. I didn't ask for the code directly but If I asked, I think I would've gotten code directly. I tried to finish the assignment on my own by taking help from AI. The response was always good but sometimes missed some details which I wanted.
