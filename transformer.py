@@ -9,7 +9,7 @@ from torch import optim
 import matplotlib.pyplot as plt
 from typing import List
 from utils import *
-from tqdm import tqdm 
+# from tqdm import tqdm 
 
 # Wraps an example: stores the raw input string (input), the indexed form of the string (input_indexed),
 # a tensorized version of that (input_tensor), the raw outputs (output; a numpy array) and a tensorized version
@@ -62,9 +62,7 @@ class Transformer(nn.Module):
         # Pass through transformer layers
         attn_maps = []
         for layer in self.transformer_layers:
-            out, attn_map = layer(x)
-            x = out + x  # Residual connection
-            # x = out        # No Residual connection
+            x, attn_map = layer(x)
             attn_maps.append(attn_map)
         
         # Pass through output layer and apply softmax
@@ -91,6 +89,12 @@ class TransformerLayer(nn.Module):
 
         self.projection = nn.Linear(d_internal, d_model)
 
+        self.feedforward = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.ReLU(),
+            nn.Linear(d_model, d_model)
+        )
+
 
     def forward(self, input_vecs):
         """
@@ -111,8 +115,17 @@ class TransformerLayer(nn.Module):
         attn_output = torch.matmul(attn_weights, values)
 
         attn_output = self.projection(attn_output)
-        
-        return attn_output, attn_weights
+
+        # Residual connection 1
+        res1_output = attn_output + input_vecs
+
+        # Feedforward layer
+        ff_output = self.feedforward(res1_output)
+
+        # Residual connection 2
+        res2_output = ff_output + res1_output
+
+        return res2_output, attn_weights
 
 
 # Implementation of positional encoding that you can use in your network
@@ -162,6 +175,7 @@ def train_classifier(args, train, dev):
     num_layers = 2
 
     model = Transformer(vocab_size, num_positions, d_model, d_internal, num_classes, num_layers)
+    # print(model)
     model.zero_grad()
     model.train()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -174,7 +188,8 @@ def train_classifier(args, train, dev):
         ex_idxs = [i for i in range(0, len(train))]
         random.shuffle(ex_idxs)
         loss_fcn = nn.NLLLoss()
-        for idx in tqdm(ex_idxs, desc=f"Training Epoch {t}", unit="line"):
+        # for idx in tqdm(ex_idxs, desc=f"Training Epoch {t}", unit="line"):
+        for idx in ex_idxs:
             row = train[idx]
             predictions, attn_maps = model(row.input_tensor)
             loss = loss_fcn(predictions, row.output_tensor)
